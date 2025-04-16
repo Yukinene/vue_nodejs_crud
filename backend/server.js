@@ -1,22 +1,17 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const sequelize = require("./config/db");
-const authRoutes = require("./routes/auth");
-const postRoutes = require("./routes/post");
+require('dotenv').config()
+const express = require('express')
+const cors = require('cors')
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+const auth = require('./routes/auth')
+const post = require('./routes/post')
 
-//ใช้ Route
-app.use("/api/auth",authRoutes);
-app.use("api/posts",postRoutes);
+const app = express()
+app.use(cors())
+app.use(express.json())
 
-sequelize.sync().then(
-    () => {
-        app.listen(3000, 
-            () => console.log("เซิฟเวอร์กำลังทำงานบนพอร์ต 3000")
-            );
-    }    
-);
+//Route
+app.use('/api/auth', auth)
+app.use('/api/posts', post)
+
+const PORT = process.env.PORT || 3000
+app.listen(PORT, () => console.log(`เซิฟเวอร์กำลังทำงานที่ พอร์ต ${PORT}`))

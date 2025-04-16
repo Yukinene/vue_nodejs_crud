@@ -1,18 +1,43 @@
-const { DataType, DataTypes } = require("sequelize");
-const sequelize = require("../config/db");
-const User = require("./User");
+const db = require('../config/db')
 
-const Post = sequelize.define("Post",{
-    title: { type:DataTypes.STRING,allowNull:false},
-    context: { type:DataTypes.TEXT,allowNull:false}
-})
+async function getPostsByUser(userId) {
+  const [rows] = await db.query(
+    'SELECT * FROM posts WHERE user_id = ? ORDER BY created_at DESC',
+    [userId]
+  )
+  return rows
+}
 
-//Relation 
-Post.belongsTo(User,{
-    foreignKey: "userId"
-});
-User.hasMany(Post,{
-    foreignKey: "userId"
-});
+async function getPostById(id) {
+  const [rows] = await db.query('SELECT * FROM posts WHERE id = ?', [id])
+  return rows[0]
+}
 
-module.exports = Post;
+async function createPost(userId, title, content) {
+  const [result] = await db.query(
+    'INSERT INTO posts (user_id, title, content) VALUES (?, ?, ?)',
+    [userId, title, content]
+  )
+  return result.insertId
+}
+
+async function updatePost(id, title, content) {
+  const [result] = await db.query(
+    'UPDATE posts SET title = ?, content = ? WHERE id = ?',
+    [title, content, id]
+  )
+  return result.affectedRows
+}
+
+async function deletePost(id) {
+  const [result] = await db.query('DELETE FROM posts WHERE id = ?', [id])
+  return result.affectedRows
+}
+
+module.exports = {
+  getPostsByUser,
+  getPostById,
+  createPost,
+  updatePost,
+  deletePost
+}
