@@ -14,6 +14,12 @@ npm install
 cd backend
 npm init -y
 ```
+### Change .env.example to .env and add secret key
+
+```sh
+vue_nodejs_crud_db.sql
+
+```
 ### Run mysql database
 
 ```sh
