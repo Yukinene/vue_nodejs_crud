@@ -17,6 +17,7 @@
 
 <script>
 import axios from 'axios'
+
 export default {
   data() {
     return { title: '', content: '', isEdit: false }
@@ -26,8 +27,8 @@ export default {
     if (id) {
       this.isEdit = true
       const res = await axios.get(`http://localhost:3000/api/posts/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      })
+  withCredentials: true
+})
       this.title = res.data.title
       this.content = res.data.content
     }
@@ -35,7 +36,9 @@ export default {
   methods: {
     async savePost() {
       const payload = { title: this.title, content: this.content }
-      const config = { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      
+      
+      const config = { withCredentials: true}
       if (this.isEdit) {
         const id = this.$route.params.id
         await axios.put(`http://localhost:3000/api/posts/${id}`, payload, config)

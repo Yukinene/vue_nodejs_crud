@@ -16,18 +16,25 @@
 </template>
 
 <script>
-import axios from 'axios'
 export default {
   data() {
-    return { username: '', password: '' }
+    return {
+      username: '',
+      password: '',
+      errorMessage: '',
+    }
   },
   methods: {
-    async register() {
-      await axios.post('http://localhost:3000/api/auth/register', {
-        username: this.username, password: this.password
-      })
-      this.$router.push('/login')
-    }
-  }
+    submitRegister() {
+      this.$store
+        .dispatch('register', { username: this.username, password: this.password })
+        .then(() => {
+          this.$router.push('/login')
+        })
+        .catch((error) => {
+          this.errorMessage = 'An error occurred. Please try again.'
+        })
+    },
+  },
 }
 </script>

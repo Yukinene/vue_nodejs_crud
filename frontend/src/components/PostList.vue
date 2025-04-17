@@ -1,13 +1,24 @@
 <template>
-  <div class="container mt-4">
-    <h3>Your Posts</h3>
-    <button class="btn btn-success mb-3" @click="$router.push('/posts/new')">New Post</button>
-    <div v-for="post in posts" :key="post.id" class="card mb-3">
-      <div class="card-body">
-        <h5 class="card-title">{{ post.title }}</h5>
-        <p class="card-text">{{ post.content }}</p>
-        <button class="btn btn-warning me-2" @click="editPost(post)">Edit</button>
-        <button class="btn btn-danger" @click="deletePost(post.id)">Delete</button>
+  <div class="container mt-5">
+    <h2>โพสต์ทั้งหมด</h2>
+
+    <div v-if="auth.isLoggedIn" class="mb-3">
+      <router-link to="/posts/create" class="btn btn-success">+ สร้างโพสต์ใหม่</router-link>
+    </div>
+
+    <div v-if="loading">กำลังโหลด...</div>
+    <div v-else-if="posts.length === 0">ไม่มีโพสต์</div>
+    
+    <div v-else>
+      <div v-for="post in posts" :key="post.id" class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">{{ post.title }}</h5>
+          <p class="card-text">{{ post.content }}</p>
+          <div v-if="auth.user?.id === post.user_id">
+            <router-link :to="`/posts/${post.id}/edit`" class="btn btn-sm btn-primary">แก้ไข</router-link>
+            <button @click="deletePost(post.id)" class="btn btn-sm btn-danger ms-2">ลบ</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -15,29 +26,47 @@
 
 <script>
 import axios from 'axios'
+import { ref, onMounted } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+
 export default {
-  data() {
-    return { posts: [] }
-  },
-  mounted() {
-    this.fetchPosts()
-  },
-  methods: {
-    async fetchPosts() {
-      const res = await axios.get('http://localhost:3000/api/posts', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      })
-      this.posts = res.data
-    },
-    editPost(post) {
-      this.$router.push(`/posts/edit/${post.id}`)
-    },
-    async deletePost(id) {
-      await axios.delete(`http://localhost:3000/api/posts/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      })
-      this.fetchPosts()
+  setup() {
+    const auth = useAuthStore()
+    const posts = ref([])
+    const loading = ref(true)
+
+    const fetchPosts = async () => {
+      try {
+        const res = await axios.get('http://localhost:3000/api/posts/getall', {
+          withCredentials: true,
+        })
+        posts.value = res.data
+      } catch (err) {
+        console.error('โหลดโพสต์ล้มเหลว:', err)
+      } finally {
+        loading.value = false
+      }
     }
+
+    const deletePost = async (id) => {
+      if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบโพสต์นี้?')) return
+      try {
+        await axios.delete(`http://localhost:3000/api/posts/${id}`, {
+          withCredentials: true,
+        })
+        posts.value = posts.value.filter(post => post.id !== id)
+      } catch (err) {
+        console.error('ลบโพสต์ล้มเหลว:', err)
+      }
+    }
+
+      onMounted(async () => {
+    await auth.fetchUser()
+    await fetchPosts()
+  })
+
+
+    return { posts, auth, loading, deletePost }
   }
 }
 </script>

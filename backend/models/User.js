@@ -1,9 +1,25 @@
-const { DataType, DataTypes } = require("sequelize");
-const sequelize = require("../config/db");
+const db = require('../config/db')
 
-const User = sequelize.define("User",{
-    username: { type:DataTypes.STRING,unique:true,allowNull:false},
-    password: { type:DataTypes.STRING,allowNull:false}
-})
+async function findByUsername(username) {
+  const [rows] = await db.query('SELECT * FROM users WHERE username = ?', [username])
+  return rows[0]
+}
 
-module.exports = User;
+async function createUser(username, hashedPassword) {
+  const [result] = await db.query(
+    'INSERT INTO users (username, password) VALUES (?, ?)',
+    [username, hashedPassword]
+  )
+  return result.insertId
+}
+
+async function findById(id) {
+  const [rows] = await db.query('SELECT * FROM users WHERE id = ?', [id])
+  return rows[0]
+}
+
+module.exports = {
+  findByUsername,
+  createUser,
+  findById
+}

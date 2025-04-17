@@ -24,10 +24,13 @@ export default {
   methods: {
     async login() {
       const res = await axios.post('http://localhost:3000/api/auth/login', {
-        username: this.username, password: this.password
-      })
-      localStorage.setItem('token', res.data.token)
-      this.$router.push('/posts')
+  username: this.username,
+  password: this.password
+}, {
+  withCredentials: true
+})
+
+      this.$router.push('/')
     }
   }
 }
